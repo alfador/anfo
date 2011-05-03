@@ -6,5 +6,3 @@ v1.1 - Let linux users use better features of raw_input
      - Viewing the queue also shows the rating of each song
      - pageviewer now has a 'stats' command
      - pageviewer now has a 'global_stats' command
-       TODO: check if this works on windows 
-

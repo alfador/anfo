@@ -56,13 +56,16 @@ def print_queue_results(songs):
     queue_length = len(songs)
     num_new_rates = len(filter(lambda x: x.user_rating == 0, songs))
     num_old_rates = queue_length - num_new_rates
-    average_rating = 0
+    average_user_rating = 0
     if num_old_rates != 0:
-        average_rating = sum([x.user_rating for x in songs
+        average_user_rating = sum([x.user_rating for x in songs
             if x.user_rating != 0]) / float(num_old_rates)
-    print 'Songs in queue: %d.  New rates: %d.  Average rating: %.2f' % \
-        (queue_length, num_new_rates, average_rating)
+    print 'Songs in queue: %d.  New rates: %d.  Average user rating: %.2f' % \
+        (queue_length, num_new_rates, average_user_rating)
+    average_rating = sum([x.rating for x in songs]) / float(len(songs))
+    print 'Average overall rating: %.2f' % average_rating
     print
+
 
 
 def clean_query(command):

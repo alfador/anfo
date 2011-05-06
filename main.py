@@ -163,7 +163,7 @@ def print_global_stats(songs):
     for song in songs:
         for genre in song.genres:
             if genre not in genres:
-                genres[genre] = 0
+                genres[genre] = 1
             else:
                 genres[genre] += 1
     # Print out genre counts

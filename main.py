@@ -62,7 +62,10 @@ def print_queue_results(songs):
             if x.user_rating != 0]) / float(num_old_rates)
     print 'Songs in queue: %d.  New rates: %d.  Average user rating: %.2f' % \
         (queue_length, num_new_rates, average_user_rating)
-    average_rating = sum([x.rating for x in songs]) / float(len(songs))
+    non_zeros = filter(lambda x: x != 0, [x.rating for x in songs])
+    average_rating = 0
+    if non_zeros != []:
+        average_rating = sum(non_zeros) / float(len(non_zeros))
     print 'Average overall rating: %.2f' % average_rating
     print
 

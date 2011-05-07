@@ -6,3 +6,15 @@ v1.1 - Let linux users use better features of raw_input
      - Viewing the queue also shows the rating of each song
      - pageviewer now has a 'stats' command
      - pageviewer now has a 'global_stats' command
+
+v1.2 - Viewing queue displays the average overall rating, too.
+     - Fixed minor bug in global_stats
+     - Allowed more commands in the pageviewer, so you don't have to switch
+       between the pageviewer and the main anfo prompt nearly as much
+     - Improved error messages
+     - Added shuffle command to pageviewer, so you can choose songs more or less
+       randomly.
+     - Added update command, which updates song information for a particular
+       song.  This is useful if you want to update the total_rates or rating
+       field of songs, for example if you want to remove songs from a list of
+       unrated songs.

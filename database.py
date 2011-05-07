@@ -112,7 +112,7 @@ class Database:
     def populate_song(self, id):
         '''
         Scrapes the page for a specific song and adds it to the database.
-        Assumes that the given is not in the database already.
+        Assumes that the given id is not in the database already.
         '''
         # Get the html of the song page
         opener = urllib2.build_opener()
@@ -125,7 +125,7 @@ class Database:
         # Commit the database, which shouldn't happen too frequently as this
         # method uses the network, which is slow
         self.conn.commit()
-        
+
 
     def populate(self):
         '''
@@ -169,6 +169,8 @@ class Database:
     def insert_song(self, song):
         '''
         Inserts a new song into the database, given a SongInfo object.
+        If a song with the same id already exists in the database, that song
+        is replaced by the song being inserted.
         '''
         # Convert genres and tags back into a delimited string
         genres = delimiter_char.join(song.genres)
@@ -190,7 +192,7 @@ class Database:
         user_rating = song.user_rating
         user_favorite = song.user_favorite
         
-        sql = '''insert into ''' + table_name +\
+        sql = '''insert or replace into ''' + table_name +\
         ''' (id, artist, title, album, year, genres, rating, total_rates,
         duration, tags, user_rating, user_favorite) values (%d, '%s', '%s',
         '%s', %d, '%s', %f, %d, %d, '%s', %d, '%s')''' \
@@ -242,8 +244,8 @@ class Database:
                 result['user_rating'], result['user_favorite'])
             songs.append(song)
         return songs
-        
-        
+
+
 
 
     def parse_playlist_page(self, html):

@@ -237,7 +237,9 @@ def show_songs(songs):
                 'complete details on how to query.  Does not update the ' +\
                 'songs currently being viewed until a new query is done.\n\n' +\
                 'rate (id) (rating): sets the user rating for a song\n\n' +\
-                'shuffle: Shuffles the queried songs randomly.\n\n'
+                'shuffle: Shuffles the queried songs randomly.\n\n' +\
+                'update (id): Updates the information for the song with the ' +\
+                'given id\n\n'
         elif command in ['exit', 'quit', 'q']:
             return # Go back to main prompt
         elif command == 'p':
@@ -271,6 +273,8 @@ def show_songs(songs):
             continue
         elif command == 'shuffle':
             random.shuffle(songs)
+        elif command.startswith('update'):
+            update_song(command)
         else:
             show_page = False
             print 'Invalid command'
@@ -359,6 +363,36 @@ def queue():
         print e
 
 
+def update_song(command):
+    '''
+    Updates the stored information for a song, querying the website.
+    '''
+    # Parse command, printing out an error message if the given command is
+    # formatted incorrectly
+    error_str = 'Error in updating.  Correct format is "update (id)", where ' +\
+    '\'id\' is an integer giving the id of the song whose information we ' +\
+    'want to update.'
+    command = command.split()
+    if len(command) != 2 or not command[1].isdigit():
+        print error_str
+        return
+    # Try to update
+    id = int(command[1])
+    # Updating using the website removes any user-specific information we have
+    # in the database for that song, so save it and add it in later
+    song = alfador.get_song_info(id)
+    try:
+        alfador.populate_song(id)
+    except urllib2.URLError, e:
+        print 'Failed to connect to site.  Make sure the id is correct and ' +\
+        'you have an internet connection.'
+        print e
+    except Exception, e:
+        print 'Error in updating: ', e
+    # Need to update user fields that we saved
+    if song != None:
+        alfador.rate_song(song.id, song.user_rating)
+
 
 # UI loop
 if __name__ == '__main__':
@@ -375,6 +409,8 @@ if __name__ == '__main__':
             query(command)
         elif command.startswith('rate'):
             rate_song(command)
+        elif command.startswith('update'):
+            update_song(command)
         elif command == 'help':
             print
             print 'Commands: \n' +\
@@ -384,7 +420,9 @@ if __name__ == '__main__':
                 'remake_all: Build entire database.  Run this once when you ' +\
                 'use the program for the first time.\n\n' +\
                 'query (query_string): Make a query.  See README.txt for ' +\
-                'complete details on how to query.\n'
+                'complete details on how to query.\n\n' +\
+                'update (id): Updates the information for the song with the ' +\
+                'given id\n\n'
         elif command == 'alfador':
             ALFADOR()
         else:

@@ -1,6 +1,7 @@
 import database
 import math
 import string
+import urllib2
 
 # On Unix systems importing readline lets raw_input work nicer (e.g. can
 # press up to get previous command)
@@ -22,6 +23,9 @@ except ImportError, e:
 # TODO: Put these elsewhere
 # Number of songs to display on one page of results
 songs_per_page = 20
+
+# Made by me, so I can name my variables whatever I want :P
+alfador = database.Database()
 
 
 def print_queue_results(songs):
@@ -101,6 +105,10 @@ def print_stats(songs):
     Prints some basic statistics about the given songs, based on user
     ratings.
     '''
+    # Do nothing if no songs were given
+    if songs == []:
+        print 'No songs to print stats about'
+        return
     # Get frequency of each rating
     ratings = [song.user_rating for song in songs]
     song_totals = []
@@ -120,10 +128,9 @@ def print_stats(songs):
     mean = None
     stddev = None
     # TODO: Inefficient, just use song_totals.  Doesn't matter much, though.
-    if len(ratings) >= 1:
-        mean = sum(ratings) / float(len(ratings))
-        squares = [(rating - mean) ** 2 for rating in ratings]
-        stddev = math.sqrt(sum(squares) / len(squares))
+    mean = sum(ratings) / float(len(ratings))
+    squares = [(rating - mean) ** 2 for rating in ratings]
+    stddev = math.sqrt(sum(squares) / len(squares))
     print 'Total songs: ', len(ratings)
     print 'Mean: ', mean
     print 'Std. Dev.: ', stddev
@@ -215,12 +222,21 @@ def show_songs(songs):
         if command == 'help':
             show_page = False
             print
-            print 'Page viewer:\nCommands:\nhelp: Access this help message\n' +\
-                'p: go to previous page\nn: go to next page\ng page_number: ' +\
-                'go to page number \'page_number\'\nq: go back to main prompt'+\
-                '\nstats: get stats about the queried songs\nglobal_stats: '+\
-                'get stats on queried songs based on global information\n'
-        elif command == 'q':
+            print 'Page viewer:\n' +\
+                'Commands:\n' +\
+                'help: Access this help message\n\n' +\
+                'p: go to previous page\nn: go to next page\n\n' +\
+                'g page_number: go to page number \'page_number\'\n\n' +\
+                '(q|quit|exit): go back to main prompt\n\n' +\
+                'stats: get stats about the queried songs\n\n' +\
+                'global_stats: get stats on queried songs based on global ' +\
+                'information\n\n' +\
+                'queue: view the queue\n\n' +\
+                'query (query_string): Make a query.  See README.txt for ' +\
+                'complete details on how to query.  Does not update the ' +\
+                'songs currently being viewed until a new query is done.\n\n' +\
+                'rate (id) (rating): sets the user rating for a song\n\n'
+        elif command in ['exit', 'quit', 'q']:
             return # Go back to main prompt
         elif command == 'p':
             page = max(1, page - 1)
@@ -230,6 +246,7 @@ def show_songs(songs):
             next_page = command[2:]
             if (not next_page.isdigit() or int(next_page) <= 0 or
                 int(next_page) > num_pages):
+                show_page = False
                 print 'Invalid page number!'
                 continue
             page = int(next_page)
@@ -239,7 +256,19 @@ def show_songs(songs):
         elif command == 'global_stats':
             show_page = False
             print_global_stats(songs)
+        elif command == 'queue':
+            show_page = False
+            queue()
+        elif command.startswith('query'):
+            query(command)
+            return # Go back to main prompt after quitting the query
+        elif command.startswith('rate'):
+            rate_song(command)
+        elif command == '':
+            # Do nothing, which lets the user easily view the page again
+            continue
         else:
+            show_page = False
             print 'Invalid command'
 
 
@@ -251,11 +280,81 @@ def ALFADOR():
     print '          v v v v     '
 
 
+def rate_song(command):
+    '''
+    Rates a song.
+    Input 'command' takes the form 'rate (id) (rating)'
+    '''
+    error_msg = 'Invalid rating syntax. Use "(rate (id) (rating))", where both ' +\
+    '\'id\' and \'rating\' are integers.'
+    command = command.split()
+    if len(command) != 3:
+        print error_msg
+        return
+    [command, id, rating] = command
+    if not id.isdigit() or not rating.isdigit():
+        print error_msg
+        return
+    id = int(id)
+    rating = int(rating)
+    # Check whether a song with that id is in the database
+    info = alfador.get_song_info(id)
+    if info == None:
+        # No such song
+        print 'No song with id %d exists in the database.' % id
+        return
+    alfador.rate_song(id, int(rating))
 
 
+def query(command):
+    '''
+    Makes a query, going into the pageviewer.
+    '''
+    command = clean_query(command[6:]) # Take 'query' out of command
+    print 'Making query: ', command
+    try:
+        songs = alfador.make_query(command)
+        show_songs(songs)
+    # Bad style
+    except Exception, e:
+        print e
+        print 'Invalid query.  Probably.  If you believe this to be '+\
+            'incorrect, report bug.'
 
-# Made by me, so I can name my variables whatever I want :P
-alfador = database.Database()
+
+def remake_all(command):
+    '''
+    Remakes the entire database.
+    '''
+    print 'Scraping the entire song database will take a while ' +\
+    'and use a lot of animenfo\'s bandwidth.  Don\'t do this ' +\
+    'frequently, please. Proceed? (Y/N)'
+    proceed = raw_input()
+    if proceed == 'Y':
+        try:
+            alfador.remake_all()
+        except urllib2.URLError, e:
+            print 'Failed to connect to site.'
+            print e
+        # Bad style to catch any exception
+        except Exception, e:
+            print e
+            print 'Error in scraping.  Do you have an internet ' +\
+                'connection right now?  If so, try again, and if it ' +\
+                'doesn\'t work you may have found a bug ^^'
+
+
+def queue():
+    '''
+    Views the queue.
+    '''
+    try:
+        print_queue_results(alfador.queue_songs())
+    except urllib2.URLError, e:
+        print 'Failed to connect to site.'
+        print e
+
+
 
 # UI loop
 if __name__ == '__main__':
@@ -263,49 +362,17 @@ if __name__ == '__main__':
         command = raw_input("anfo> ")
         command = command.strip()
         if command == 'queue':
-            print_queue_results(alfador.queue_songs())
+            queue()
         elif command in ['exit', 'quit', 'q']:
             exit()
         elif command == 'remake_all':
-            print 'Scraping the entire song database will take a while ' +\
-            'and use a lot of animenfo\'s bandwidth.  Don\'t do this ' +\
-            'frequently, please. Proceed? (Y/N)'
-            proceed = raw_input()
-            if proceed == 'Y':
-                try:
-                    alfador.remake_all()
-                # Bad style to catch any exception
-                except Exception, e:
-                    print e
-                    print 'Error in scraping.  Do you have an internet ' +\
-                        'connection right now?  If so, try again, and if it ' +\
-                        'doesn\'t work you may have found a bug ^^'
+            remake_all(command)
         elif command.startswith('query'):
-            command = clean_query(command[6:]) # Take 'query' out of command
-            print 'Making query: ', command
-            try:
-                songs = alfador.make_query(command)
-                show_songs(songs)
-            # Bad style
-            except Exception, e:
-                print e
-                print 'Invalid query.  Probably.  If you believe this to be '+\
-                    'incorrect, report bug.'
+            query(command)
         elif command.startswith('rate'):
-            error_msg = 'Invalid rating syntax. (rate (id) (rating))'
-            # Rate a song
-            # Syntax is 'rate (id) (rating)'
-            command = command.split()
-            if len(command) != 3:
-                print error_msg
-                continue
-            [command, id, rating] = command
-            if not id.isdigit() or not (rating.replace('.', '')).isdigit():
-                print error_msg
-                continue
-            alfador.rate_song(int(id), int(rating))
+            rate_song(command)
         elif command == 'help':
-            print # newline
+            print
             print 'Commands: \n' +\
                 'queue: Display the current queue\n\n' +\
                 '(exit|quit|q): quit\n\n' +\
@@ -313,7 +380,7 @@ if __name__ == '__main__':
                 'remake_all: Build entire database.  Run this once when you ' +\
                 'use the program for the first time.\n\n' +\
                 'query (query_string): Make a query.  See README.txt for ' +\
-                'complete details on how to query.'
+                'complete details on how to query.\n'
         elif command == 'alfador':
             ALFADOR()
         else:

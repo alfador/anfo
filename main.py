@@ -1,5 +1,6 @@
 import database
 import math
+import random
 import string
 import urllib2
 
@@ -235,7 +236,8 @@ def show_songs(songs):
                 'query (query_string): Make a query.  See README.txt for ' +\
                 'complete details on how to query.  Does not update the ' +\
                 'songs currently being viewed until a new query is done.\n\n' +\
-                'rate (id) (rating): sets the user rating for a song\n\n'
+                'rate (id) (rating): sets the user rating for a song\n\n' +\
+                'shuffle: Shuffles the queried songs randomly.\n\n'
         elif command in ['exit', 'quit', 'q']:
             return # Go back to main prompt
         elif command == 'p':
@@ -267,6 +269,8 @@ def show_songs(songs):
         elif command == '':
             # Do nothing, which lets the user easily view the page again
             continue
+        elif command == 'shuffle':
+            random.shuffle(songs)
         else:
             show_page = False
             print 'Invalid command'

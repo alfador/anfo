@@ -208,6 +208,7 @@ class Database:
         '''
         Gets the SongInfo for a song in the database.
         Returns None if no such song with that id exists.
+        Input 'id' should be an integer.
         '''
         # Fetch the result of the query
         sql = '''select * from songs where id=%d''' % id

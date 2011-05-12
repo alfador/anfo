@@ -239,7 +239,9 @@ def show_songs(songs):
                 'rate (id) (rating): sets the user rating for a song\n\n' +\
                 'shuffle: Shuffles the queried songs randomly.\n\n' +\
                 'update (id): Updates the information for the song with the ' +\
-                'given id\n\n'
+                'given id\n\n' +\
+                'delete (id): Deletes the song with the given id from the ' +\
+                'database.\n\n'
         elif command in ['exit', 'quit', 'q']:
             return # Go back to main prompt
         elif command == 'p':
@@ -275,6 +277,8 @@ def show_songs(songs):
             random.shuffle(songs)
         elif command.startswith('update'):
             update_song(command)
+        elif command.startswith('delete'):
+            delete_song(command)
         else:
             show_page = False
             print 'Invalid command'
@@ -328,6 +332,19 @@ def query(command):
         print e
         print 'Invalid query.  Probably.  If you believe this to be '+\
             'incorrect, report bug.'
+
+def delete_song(command):
+    '''
+    Removes a song from the database.
+    The given command should take the form: 'delete (id)'
+    '''
+    command = command.split()
+    error_str = 'Invalid delete syntax.  Proper syntax: "delete (id)"'
+    if len(command) != 2 or not command[1].isdigit():
+        print error_str
+        return
+    id = int(command[1])
+    alfador.remove_song(id)
 
 
 def remake_all(command):
@@ -411,6 +428,8 @@ if __name__ == '__main__':
             rate_song(command)
         elif command.startswith('update'):
             update_song(command)
+        elif command.startswith('delete'):
+            delete_song(command)
         elif command == 'help':
             print
             print 'Commands: \n' +\
@@ -422,7 +441,9 @@ if __name__ == '__main__':
                 'query (query_string): Make a query.  See README.txt for ' +\
                 'complete details on how to query.\n\n' +\
                 'update (id): Updates the information for the song with the ' +\
-                'given id\n\n'
+                'given id\n\n' +\
+                'delete (id): Deletes the song with the given id from the ' +\
+                'database.\n\n'
         elif command == 'alfador':
             ALFADOR()
         else:

@@ -80,6 +80,14 @@ class Database:
         self.c.execute(sql)
         self.conn.commit() # Important that it's gone
 
+    def remove_song(self, id):
+        '''
+        Removes a song with the given id from the database.
+        '''
+        sql = 'delete from ' + table_name + ' where id=%d' % (id)
+        self.c.execute(sql)
+        self.conn.commit()
+
     def remake_all(self):
         '''
         Remakes the whole database, scraping everything.

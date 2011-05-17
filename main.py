@@ -75,6 +75,48 @@ def print_queue_results(songs):
     print
 
 
+def print_song_info(song):
+    '''
+    Prints out all information for a song.  The given song should be a SongInfo
+    object.
+    '''
+    print 'Title: %s' % song.title
+    print 'Id: %d' % song.id
+    print 'Artist: %s' % song.artist
+    print 'Album: %s' % song.album
+    # TODO: years in the database print 'Year: %d' % song.year
+    print 'Duration: %01d:%02d' % (song.duration // 60, song.duration % 60)
+    print 'Average rating: %.2f' % song.rating
+    print 'Total rates: %d' % song.total_rates
+    print 'Your rating: %d' % song.user_rating
+    print 'Genres: %s' % (', '.join(song.genres))
+    print 'Tags: %s' % (', '.join(song.tags))
+    # TODO: user favorite
+
+
+def info(command):
+    '''
+    Prints information for a song, given a command of the form 'info (id)'
+    '''
+    error_msg = 'Invalid command format: should be \'info (id)\''
+    command = command.split()
+    # Command must have the correct number of words in it
+    if len(command) != 2:
+        print error_msg
+        return
+    id = command[1]
+    # Id should be an integer
+    if not id.isdigit():
+        print error_msg
+        return
+    id = int(id)
+    song = alfador.get_song_info(id)
+    # Check if song was found
+    if song == None:
+        print 'Error: Song %d not found.  Right id?' % id
+        return
+    print_song_info(song)
+
 
 def clean_query(command):
     '''
@@ -241,7 +283,9 @@ def show_songs(songs):
                 'update (id): Updates the information for the song with the ' +\
                 'given id\n\n' +\
                 'delete (id): Deletes the song with the given id from the ' +\
-                'database.\n\n'
+                'database.\n\n' +\
+                'info (id): Shows all information for the song with the ' +\
+                'given id.\n\n'
         elif command in ['exit', 'quit', 'q']:
             return # Go back to main prompt
         elif command == 'p':
@@ -279,6 +323,9 @@ def show_songs(songs):
             update_song(command)
         elif command.startswith('delete'):
             delete_song(command)
+        elif command.startswith('info'):
+            show_page = False
+            info(command)
         else:
             show_page = False
             print 'Invalid command'
@@ -430,6 +477,8 @@ if __name__ == '__main__':
             update_song(command)
         elif command.startswith('delete'):
             delete_song(command)
+        elif command.startswith('info'):
+            info(command)
         elif command == 'help':
             print
             print 'Commands: \n' +\
@@ -443,7 +492,9 @@ if __name__ == '__main__':
                 'update (id): Updates the information for the song with the ' +\
                 'given id\n\n' +\
                 'delete (id): Deletes the song with the given id from the ' +\
-                'database.\n\n'
+                'database.\n\n'  +\
+                'info (id): Shows all information for the song with the ' +\
+                'given id.\n\n'
         elif command == 'alfador':
             ALFADOR()
         else:

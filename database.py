@@ -6,6 +6,7 @@ database.
 import cookielib
 import getpass
 import re
+import songinfo
 import sqlite3
 import urllib
 import urllib2
@@ -227,10 +228,13 @@ class Database:
         if result is None:
             return None
         # Convert into a SongInfo -_-
-        song = SongInfo(result['id'], result['artist'], result['title'],
-            result['album'], result['year'], result['genres'], result['rating'],
-            result['total_rates'], result['duration'], result['tags'],
-            result['user_rating'], result['user_favorite'])
+        # Need to convert genres and tags into lists of strings
+        song = songinfo.SongInfo(result['id'], result['artist'],
+            result['title'], result['album'], result['year'],
+            result['genres'].split(delimiter_char), result['rating'],
+            result['total_rates'], result['duration'],
+            result['tags'].split(delimiter_char), result['user_rating'],
+            result['user_favorite'])
         return song
 
 
@@ -245,11 +249,13 @@ class Database:
         songs = []
         for result in results:
             # Convert into a SongInfo -_-
-            song = SongInfo(result['id'], result['artist'], result['title'],
-                result['album'], result['year'], result['genres'],
-                result['rating'],
-                result['total_rates'], result['duration'], result['tags'],
-                result['user_rating'], result['user_favorite'])
+            # Need to convert genres and tags into lists of strings
+            song = songinfo.SongInfo(result['id'], result['artist'],
+                result['title'], result['album'], result['year'],
+                result['genres'].split(delimiter_char), result['rating'],
+                result['total_rates'], result['duration'],
+                result['tags'].split(delimiter_char), result['user_rating'],
+                result['user_favorite'])
             songs.append(song)
         return songs
 
@@ -369,8 +375,10 @@ class Database:
                 raw_input() # Pause until user presses enter
             
             # Put in the song
-            song = SongInfo(id, artist, title, album, year, genres, rating,
-                total_rates, duration, tags, user_rating, user_favorite)
+            # Convert genres and tags into list of strings
+            song = songinfo.SongInfo(id, artist, title, album, year,
+                genres.split(delimiter_char), rating, total_rates, duration,
+                tags.split(delimiter_char), user_rating, user_favorite)
             songs.append(song)
         return songs
 
@@ -469,38 +477,9 @@ class Database:
         # TODO user rating, user favorite
         user_rating = 0
         user_favorite = False
-        song = SongInfo(id, artist, title, album, year, genres, rating,
+        # SongInfo constructor uses lists of strings
+        genres = genres.split(delimiter_char)
+        tags = tags.split(delimiter_char)
+        song = songinfo.SongInfo(id, artist, title, album, year, genres, rating,
             total_rates, duration, tags, user_rating, user_favorite)
         return song
-
-
-
-class SongInfo:
-    '''
-    Contains all information about a particular song.
-    '''
-
-    def __init__(self, id, artist, title, album, year, genres, rating,
-        total_rates, duration, tags, user_rating=0, user_favorite=False):
-        '''
-        Constructor.
-        Input 'genres' is a delimited string of genres
-        Input 'tags' is a delimited string of tags
-        They are stored in SongInfo objects as lists of strings
-        '''
-
-        # Remove the delimiter character
-        self.genres = genres.split(delimiter_char)
-        self.tags = tags.split(delimiter_char)
-
-        # Everything else is set correctly
-        self.id = id
-        self.artist = artist
-        self.title = title
-        self.album = album
-        self.year = year
-        self.rating = rating
-        self.total_rates = total_rates
-        self.duration = duration
-        self.user_rating = user_rating
-        self.user_favorite = user_favorite

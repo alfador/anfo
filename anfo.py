@@ -39,12 +39,20 @@ if __name__ == '__main__':
         command = raw_input("anfo> ")
         command = command.strip()
         try :
-            if command == 'queue':
-                commands.queue(db)
+            # Just check which command was given, and dispatch.
+            if command == 'alfador':
+                commands.ALFADOR()
+            elif command.startswith('delete'):
+                commands.delete_song(command[6:], db)
             elif command in ['exit', 'quit', 'q']:
                 exit()
-            elif command == 'remake_all':
-                commands.remake_all(db)
+            elif command == 'help':
+                print
+                print help_str
+            elif command.startswith('info'):
+                commands.info(command[4:], db)
+            elif command == 'queue':
+                commands.queue(db)
             elif command.startswith('query'):
                 # sqlite3 might give an error on a bad query
                 try:
@@ -56,19 +64,12 @@ if __name__ == '__main__':
                 commands.rate_song(command[4:], db)
             elif command.startswith('update'):
                 commands.update_song(command[6:], db)
-            elif command.startswith('delete'):
-                commands.delete_song(command[6:], db)
-            elif command.startswith('info'):
-                commands.info(command[4:], db)
-            elif command == 'help':
-                print
-                print help_str
-            elif command == 'alfador':
-                commands.ALFADOR()
+            elif command == 'remake_all':
+                commands.remake_all(db)
             else:
                 print 'Invalid command.'
         # All errors are recoverable
         except commands.InvalidArgumentError, e:
             print e
-        except SongNotFoundError, e:
+        except commands.SongNotFoundError, e:
             print e

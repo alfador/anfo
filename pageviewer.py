@@ -81,7 +81,7 @@ def pageviewer(songs, db):
         # Prompt for input
         command = raw_input("pageviewer> ")
         command = command.strip()
-        # Start with pageviewer-specific commands
+        # Process the command
         try:
             if command == 'help':
                 show_page = False
@@ -89,6 +89,7 @@ def pageviewer(songs, db):
                 print help_str
             elif command in ['exit', 'quit', 'q']:
                 return # Go back to main prompt
+            # Page-moving commands
             elif command == 'p':
                 page = max(1, page - 1)
             elif command == 'n':
@@ -101,6 +102,7 @@ def pageviewer(songs, db):
                     print 'Invalid page number!'
                     continue
                 page = int(next_page)
+            # Stats commands
             elif command == 'stats':
                 show_page = False
                 commands.print_stats(songs)

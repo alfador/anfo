@@ -272,7 +272,6 @@ def parse_playlist_page(html):
     return songs
 
 
-
 def queue_ids():
     '''
     Checks the queue, returning a list of ids, in order from first in

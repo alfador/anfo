@@ -18,3 +18,9 @@ v1.2 - Viewing queue displays the average overall rating, too.
        song.  This is useful if you want to update the total_rates or rating
        field of songs, for example if you want to remove songs from a list of
        unrated songs.
+
+v1.3 - 'anfo.py' is the new main.
+     - Added 'delete' command, so you can manually get rid of songs that have
+       been deleted from anfo.
+     - Added 'info' command
+     - Did a major refactoring of the code.

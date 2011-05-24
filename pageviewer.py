@@ -7,14 +7,6 @@ import commands
 import random
 import sqlite3
 
-# On Unix systems importing readline lets raw_input work nicer (e.g. can
-# press up to get previous command)
-try:
-    import readline
-except ImportError, e:
-    pass
-
-
 # Number of songs to display on one page of results
 songs_per_page = 20
 

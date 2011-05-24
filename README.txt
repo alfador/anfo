@@ -4,7 +4,7 @@ Not sure if x has to be a certain value - I'm running on 2.6 and it works
 
 -To run: when you're in the 'anfo' directory (in the command prompt/terminal),
 type:
-python main.py
+python anfo.py
 If python is not in your path (i.e. you can't run python in the command prompt/
 terminal/etc), then type the full path to your python executable instead of
 just python.

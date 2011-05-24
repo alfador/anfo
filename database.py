@@ -77,57 +77,29 @@ class Database:
         self.conn.commit() # Important that it's gone
 
 
-    def remove_song(self, id):
+    def get_song_info(self, id):
         '''
-        Removes a song with the given id from the database.
+        Gets the SongInfo for a song in the database.
+        Returns None if no such song with that id exists.
+        Input 'id' should be an integer.
         '''
-        sql = 'delete from ' + table_name + ' where id=%d' % (id)
+        # Fetch the result of the query
+        sql = '''select * from songs where id=%d''' % id
         self.c.execute(sql)
-        self.conn.commit()
+        result = self.c.fetchone()
+        if result is None:
+            return None
+        # Convert into a SongInfo -_-
+        # Need to convert genres and tags into lists of strings
+        song = songinfo.SongInfo(result['id'], result['artist'],
+            result['title'], result['album'], result['year'],
+            result['genres'].split(delimiter_char), result['rating'],
+            result['total_rates'], result['duration'],
+            result['tags'].split(delimiter_char), result['user_rating'],
+            result['user_favorite'])
+        return song
 
 
-    def remake_all(self):
-        '''
-        Remakes the whole database, scraping everything.
-        '''
-        self.clear_database()
-        self.create_database()
-        self.conn.commit()
-        self.populate()
-        self.conn.commit()
-
-
-    def rate_song(self, id, rating):
-        '''
-        Updates the user rating for a particular song.
-        '''
-        sql = 'update ' + table_name + ' set user_rating=' + str(rating) +\
-            ' where id=' + str(id)
-        self.c.execute(sql)
-        self.conn.commit()
-
-
-    def populate_song(self, id):
-        '''
-        Scrapes the page for a specific song and adds it to the database.
-        Assumes that the given id is not in the database already.
-        '''
-        song = scraping.get_song(id)
-        self.insert_song(song)
-        # Commit the database, which shouldn't happen too frequently as this
-        # method uses the network, which is slow
-        self.conn.commit()
-
-
-    def populate(self):
-        '''
-        Scrapes the website and adds everything to the database.
-        '''
-        songs = scraping.scrape_all()
-        for song in songs:
-            self.insert_song(song)
-
-    
     def insert_song(self, song):
         '''
         Inserts a new song into the database, given a SongInfo object.
@@ -168,29 +140,6 @@ class Database:
             raise e
 
 
-    def get_song_info(self, id):
-        '''
-        Gets the SongInfo for a song in the database.
-        Returns None if no such song with that id exists.
-        Input 'id' should be an integer.
-        '''
-        # Fetch the result of the query
-        sql = '''select * from songs where id=%d''' % id
-        self.c.execute(sql)
-        result = self.c.fetchone()
-        if result is None:
-            return None
-        # Convert into a SongInfo -_-
-        # Need to convert genres and tags into lists of strings
-        song = songinfo.SongInfo(result['id'], result['artist'],
-            result['title'], result['album'], result['year'],
-            result['genres'].split(delimiter_char), result['rating'],
-            result['total_rates'], result['duration'],
-            result['tags'].split(delimiter_char), result['user_rating'],
-            result['user_favorite'])
-        return song
-
-
     def make_query(self, query):
         '''
         Gets the SongInfo for all song in the database that match the query.
@@ -213,6 +162,26 @@ class Database:
         return songs
 
 
+    def populate(self):
+        '''
+        Scrapes the website and adds everything to the database.
+        '''
+        songs = scraping.scrape_all()
+        for song in songs:
+            self.insert_song(song)
+
+
+    def populate_song(self, id):
+        '''
+        Scrapes the page for just a specific song and adds it to the database.
+        '''
+        song = scraping.get_song(id)
+        self.insert_song(song)
+        # Commit the database, which shouldn't happen too frequently as this
+        # method uses the network, which is slow
+        self.conn.commit()
+
+
     def queue_songs(self):
         '''
         Checks the queue, returning a list of SongInfo, in order from first in
@@ -231,3 +200,32 @@ class Database:
                 info = self.get_song_info(id)
             songs.append(info)
         return songs
+
+
+    def rate_song(self, id, rating):
+        '''
+        Updates the user rating for a particular song.
+        '''
+        sql = 'update ' + table_name + ' set user_rating=' + str(rating) +\
+            ' where id=' + str(id)
+        self.c.execute(sql)
+        self.conn.commit()
+
+
+    def remake_all(self):
+        '''
+        Remakes the whole database, scraping everything.
+        '''
+        self.clear_database()
+        self.create_database()
+        self.conn.commit()
+        self.populate()
+        self.conn.commit()
+
+    def remove_song(self, id):
+        '''
+        Removes a song with the given id from the database.
+        '''
+        sql = 'delete from ' + table_name + ' where id=%d' % (id)
+        self.c.execute(sql)
+        self.conn.commit()

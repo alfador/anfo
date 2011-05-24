@@ -47,6 +47,38 @@ def info(command, db):
     print_song_info(song)
 
 
+def print_song_info(song):
+    '''
+    Prints out all information for a song.
+    Arguments:
+        song - SongInfo, the song to print information about.
+    '''
+    print 'Title: %s' % song.title
+    print 'Id: %d' % song.id
+    print 'Artist: %s' % song.artist
+    print 'Album: %s' % song.album
+    # TODO: 'Year: %d' % song.year
+    print 'Duration: %01d:%02d' % (song.duration // 60, song.duration % 60)
+    print 'Average rating: %.2f' % song.rating
+    print 'Total rates: %d' % song.total_rates
+    print 'Your rating: %d' % song.user_rating
+    print 'Genres: %s' % (', '.join(song.genres))
+    print 'Tags: %s' % (', '.join(song.tags))
+    # TODO: print 'User favorite: %s' % song.user_favorite
+
+
+def queue(db):
+    '''
+    Views the queue.
+    Arguments:
+        db - Database object
+    '''
+    try:
+        print_queue_results(db.queue_songs())
+    except urllib2.URLError, e:
+        print 'Failed to connect to site.'
+        print e
+
 
 def print_queue_results(songs):
     '''
@@ -95,24 +127,16 @@ def print_queue_results(songs):
     print
 
 
-def print_song_info(song):
+def query(command, db):
     '''
-    Prints out all information for a song.
+    Makes a query, returning a list of songs
     Arguments:
-        song - SongInfo, the song to print information about.
+        command - String of the form '(query)'
+        db - Database object
     '''
-    print 'Title: %s' % song.title
-    print 'Id: %d' % song.id
-    print 'Artist: %s' % song.artist
-    print 'Album: %s' % song.album
-    # TODO: 'Year: %d' % song.year
-    print 'Duration: %01d:%02d' % (song.duration // 60, song.duration % 60)
-    print 'Average rating: %.2f' % song.rating
-    print 'Total rates: %d' % song.total_rates
-    print 'Your rating: %d' % song.user_rating
-    print 'Genres: %s' % (', '.join(song.genres))
-    print 'Tags: %s' % (', '.join(song.tags))
-    # TODO: print 'User favorite: %s' % song.user_favorite
+    command = clean_query(command)
+    print 'Making query: ', command
+    return db.make_query(command)
 
 
 def clean_query(command):
@@ -259,19 +283,6 @@ def rate_song(command, db):
     db.rate_song(id, int(rating))
 
 
-
-def query(command, db):
-    '''
-    Makes a query, returning a list of songs
-    Arguments:
-        command - String of the form '(query)'
-        db - Database object
-    '''
-    command = clean_query(command)
-    print 'Making query: ', command
-    return db.make_query(command)
-
-
 def delete_song(command, db):
     '''
     Removes a song from the database.
@@ -310,19 +321,6 @@ def remake_all(db):
             print 'Error in scraping.  Do you have an internet ' +\
                 'connection right now?  If so, try again, and if it ' +\
                 'doesn\'t work you may have found a bug ^^'
-
-
-def queue(db):
-    '''
-    Views the queue.
-    Arguments:
-        db - Database object
-    '''
-    try:
-        print_queue_results(db.queue_songs())
-    except urllib2.URLError, e:
-        print 'Failed to connect to site.'
-        print e
 
 
 

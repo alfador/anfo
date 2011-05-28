@@ -293,3 +293,59 @@ def queue_ids():
         ids.append(int(e))
 
     return ids
+
+
+
+def scrape_favorites():
+    '''
+    Scrapes a list of favorites, returning a list of ids (integers).
+    '''
+    cjar = cookielib.CookieJar()
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cjar))
+
+    print "About to scrape your favorites list."
+
+    # Query user for username and password
+    username = raw_input("Username: ")
+    password = getpass.getpass("Password: ")
+
+    # Save the login cookie
+    cjar = cookielib.CookieJar()
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cjar))
+    login_data = urllib.urlencode({'username' : username, 'password' : password})
+    opener.open('http://www.animenfo.com/radio/login.php', login_data)
+
+    # Get the number of pages to look at
+    response = opener.open('https://www.animenfo.com/radio/myfavs.php?ajax=true&page=1')
+    html = response_to_html(response)
+    # List of 'goToPage(number)'
+    # Number we want is max of these numbers
+    matches = re.findall('goToPage\(\d+\)', html)
+    num_pages = 0
+    for match in matches:
+        num_pages = max(num_pages, int(match.split('(')[1][:-1]))
+
+    # Parse all of the pages
+    songs = []
+    for page_num in range(1, num_pages + 1):
+        print 'Parsing favorites page %d of %d' % (page_num, num_pages)
+        response = opener.open('https://www.animenfo.com/radio/myfavs.php?ajax=true&page='+str(page_num))
+        html = response_to_html(response)
+        page_songs = parse_favorites_page(html)
+        songs.extend(page_songs)
+
+    return songs
+
+
+def parse_favorites_page(html):
+    '''
+    Parses the html of a page in the favorites pages.  Returns a list of
+    ids (integers) for the songs on the page.
+    '''
+    songs = []
+    # Only need to get ids
+    matches = re.findall('songinfo.php\?id=\d+"', html)
+    for match in matches:
+        id = match.split('=')[1][:-1]
+        songs.append(int(id))
+    return songs

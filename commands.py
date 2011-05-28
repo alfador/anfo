@@ -323,6 +323,23 @@ def remake_all(db):
                 'doesn\'t work you may have found a bug ^^'
 
 
+def update_favorites(db):
+    '''
+    Scrapes favorite list and adds them to the database.
+    Arguments:
+        db - Database object
+    '''
+    try:
+        db.populate_favorites()
+    except urllib2.URLError, e:
+        print 'Failed to connect to site.'
+        print e
+    # TODO: Bad style, just figure out which exceptions can actually get raised
+    except Exception, e:
+        print e
+        print 'Error in scraping favorites list.  Make sure you have an ' +\
+            'internet connection, or report error for bug-fixing :).'
+
 
 def update_song(command, db):
     '''
@@ -337,7 +354,7 @@ def update_song(command, db):
     'being updated.'
     command = command.split()
     if len(command) != 1 or not command[0].isdigit():
-        raise InvalidArgumentException(error_str)
+        raise InvalidArgumentError(error_str)
     # Try to update
     id = int(command[0])
     # Updating using the website removes any user-specific information we have
@@ -354,3 +371,4 @@ def update_song(command, db):
     # Need to update user fields that we saved
     if song != None:
         db.rate_song(song.id, song.user_rating)
+        db.set_favorite(song.id, song.user_favorite)

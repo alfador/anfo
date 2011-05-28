@@ -26,6 +26,8 @@ help_str = \
 'rate (id) (rating): sets the user rating for a song\n\n' +\
 'remake_all: Build entire database.  Run this once when you ' +\
 'use the program for the first time.\n\n' +\
+'update_favorites: Scrape your favorite list.  Only run this once the ' +\
+'database has already been made\n\n' +\
 'query (query_string): Make a query.  See README.txt for ' +\
 'complete details on how to query.\n\n' +\
 'update (id): Updates the information for the song with the given id\n\n' +\
@@ -62,10 +64,12 @@ if __name__ == '__main__':
                     print e
             elif command.startswith('rate'):
                 commands.rate_song(command[4:], db)
-            elif command.startswith('update'):
+            elif command.startswith('update '):
                 commands.update_song(command[6:], db)
             elif command == 'remake_all':
                 commands.remake_all(db)
+            elif command == 'update_favorites':
+                commands.update_favorites(db)
             else:
                 print 'Invalid command.'
         # All errors are recoverable

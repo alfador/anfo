@@ -16,6 +16,8 @@ After reading about the different commands, you'll probably want to run
 have to enter your username/password in order to fetch your ratings from the
 site.  Remaking the whole database should take several minutes, and you should
 only do it once in a long while (since it puts strain on anfo's servers).
+'update_favorites' scrapes your favorites list, which can be done after the
+initial call to 'remake_all'.
 
 -Proper query syntax:
 At the 'anfo> ' prompt, queries take the form of 'query (command)'
@@ -27,8 +29,8 @@ The following properties can be queried:
 id, artist, title, album, year, genres, rating, total_rates, duration, tags,
 user_rating, and user_favorite
 
-Of these, don't bother querying year or user_favorite, since the scraper doesn't
-get those (it's not available on the pages the scraper uses, and loading each
+Of these, don't bother querying year, since the scraper doesn't
+get it (it's not available on the pages the scraper uses, and loading each
 of the ~18000 or so individual song page isn't going to happen).
 
 Some things to note, if you're not used to SQL/this particular database:

@@ -31,7 +31,7 @@ class Database:
     duration: int, duration of song in seconds
     tags: varchar, tags of song separated by bars (|)
     user_rating: integer, rating for this user (you) (0-10), 0 for not-rated
-    user_favorite: boolean
+    user_favorite: boolean, represented as 0 or 1
     '''
     ### TODO: Add requested info
     ### TODO: Year isn't accurate (have to scrape individual song pages)
@@ -129,7 +129,7 @@ class Database:
         sql = '''insert or replace into ''' + table_name +\
         ''' (id, artist, title, album, year, genres, rating, total_rates,
         duration, tags, user_rating, user_favorite) values (%d, '%s', '%s',
-        '%s', %d, '%s', %f, %d, %d, '%s', %d, '%s')''' \
+        '%s', %d, '%s', %f, %d, %d, '%s', %d, %d)''' \
         % (id, artist, title, album, year,
         genres, rating, total_rates, duration, tags, user_rating, user_favorite)
         try:
@@ -169,6 +169,17 @@ class Database:
         songs = scraping.scrape_all()
         for song in songs:
             self.insert_song(song)
+
+
+    def populate_favorites(self):
+        '''
+        Scrapes favorites and sets the favorite values in the database.
+        '''
+        favorite_ids = scraping.scrape_favorites()
+        self.set_no_favorites() # Get rid of existing favorite values
+        for id in favorite_ids:
+            self.set_favorite(id, True)
+        self.conn.commit()
 
 
     def populate_song(self, id):
@@ -227,5 +238,27 @@ class Database:
         Removes a song with the given id from the database.
         '''
         sql = 'delete from ' + table_name + ' where id=%d' % (id)
+        self.c.execute(sql)
+        self.conn.commit()
+
+
+    def set_favorite(self, id, fav):
+        '''
+        Sets the favorite value of a song to the given value.
+        Arguments:
+            id - Integer giving the id of the song whose favorite value we want
+                 to update.
+            fav - Boolean giving what we want to set the user_favorite value to.
+        '''
+        sql = 'update ' + table_name + ' set user_favorite=%d where id=%d' \
+            % (fav, id)
+        self.c.execute(sql)
+
+
+    def set_no_favorites(self):
+        '''
+        Marks all songs as not being favorites.
+        '''
+        sql = 'update ' + table_name + ' set user_favorite=0'
         self.c.execute(sql)
         self.conn.commit()

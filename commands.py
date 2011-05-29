@@ -7,6 +7,9 @@ import database
 import math
 import urllib2
 
+# Special escape character in queries (this is a single backslash)
+escape_char = '\\'
+
 
 # Some error classes
 class InvalidArgumentError(Exception):
@@ -142,6 +145,7 @@ def query(command, db):
 def clean_query(command):
     '''
     Cleans a command used for selecting from the database.
+    Has keywords 'rated', 'unrated', 'fav', 'nofav'
     Arguments:
         command - String of the form '(query)'
     '''
@@ -154,9 +158,17 @@ def clean_query(command):
     while command != command.replace('  ', ' '):
         command = command.replace('  ', ' ')
     # unrated special syntax
-    command = command.replace('unrated', 'user_rating=0')
+    command = command.replace(' unrated', ' user_rating=0')
     # rated special syntax
-    command = command.replace('rated', 'user_rating>0')
+    command = command.replace(' rated', ' user_rating>0')
+    # favorite special syntax
+    command = command.replace(' fav', ' user_favorite=1')
+    # Not favorite special syntax
+    command = command.replace(' nofav', ' user_favorite=0')
+    # Fix escaped keywords
+    for keyword in ['unrated', 'rated', 'fav', 'nofav', escape_char]:
+        command = command.replace(escape_char + keyword, keyword)
+
     # If we aren't searching for anything in particular, we currently have a
     # string that looks like 'select * from songs where (order by ...)
     # so just get rid of where

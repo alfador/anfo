@@ -22,8 +22,6 @@ initial call to 'remake_all'.
 -Proper query syntax:
 At the 'anfo> ' prompt, queries take the form of 'query (command)'
 command takes the form of what goes in the WHERE component of an SQL query
-For your convenience, the token 'unrated' can be used to search for unrated
-songs, as can the token 'rated' for rated songs.
 
 The following properties can be queried:
 id, artist, title, album, year, genres, rating, total_rates, duration, tags,
@@ -34,6 +32,8 @@ get it (it's not available on the pages the scraper uses, and loading each
 of the ~18000 or so individual song page isn't going to happen).
 
 Some things to note, if you're not used to SQL/this particular database:
+-The token 'unrated' can be used to search for unrated songs, as can the token
+'rated' for rated songs.
 -The word 'and' should be placed between each condition you're selecting for
 -If you're trying to match some property to a string (i.e. some letters), the
 string should be in single quotes.
@@ -41,6 +41,15 @@ string should be in single quotes.
 be the last thing in the query
 -To query genres and tags, you'll want to use 'like' (see example below)
 -Durations are stored in seconds
+-user_favorite is stored as 0/1.  That is, favorited songs have user_favorite=1,
+and non-favorited songs have user_favorite=0.  Alternatively, you can use
+special syntax for favorite or non-favorite songs, using 'fav' and 'nofav',
+respectively.
+-If you _actually_ want to search for one of the keywords, literally
+(e.g. title like '%fav%'), you can escape the keyword
+(e.g. title like '%\fav%').  If you want to use an actual backslash, for some
+reason, escape the backslash (i.e. use a double backslash).
+
 
 After querying, you'll be at a prompt that looks like 'pageviewer>'.  Type
 'help' to get instructions about how to use the pageviewer.
@@ -84,3 +93,6 @@ anfo> query tags like '%K-On!%'
 
 Query all songs, sorted by album (ascending):
 anfo> query order by album asc
+
+Query all of favorites, sorted by your rating (ascending):
+anfo> query fav order by user_rating asc

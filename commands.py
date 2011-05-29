@@ -4,11 +4,19 @@ places.
 '''
 
 import database
+import datetime
 import math
+import time
 import urllib2
 
 # Special escape character in queries (this is a single backslash)
 escape_char = '\\'
+
+# Daily request limit
+daily_request_limit = 18
+
+# Number of minutes each request block lasts for
+block_minutes = 150
 
 
 # Some error classes
@@ -384,3 +392,78 @@ def update_song(command, db):
     if song != None:
         db.rate_song(song.id, song.user_rating)
         db.set_favorite(song.id, song.user_favorite)
+
+
+def request():
+    '''
+    Adds a request (and the current time) to the list of requests made.
+    '''
+    global request_times
+    # Make the list of request times, if it doesn't exist
+    try:
+        request_times
+    except NameError:
+        request_times = []
+    current_time = int(time.time())
+    # Maintain that the most recent requests are at the end of the list
+    request_times.append(current_time)
+    while len(request_times) > 18:
+        request_times.pop(0)
+
+
+def print_request_time_info():
+    '''
+    Prints time until able to request, for various requests/time limitations.
+    Should only be called after 'request', though not doing so will only result
+    in not much happening.
+    '''
+    global request_times
+    # Make the list of request times, if it doesn't exist
+    try:
+        request_times
+    except NameError:
+        request_times = []
+    print 'Using a request block length of %d minutes.' % block_minutes
+    print
+    block_seconds = block_minutes * 60
+    current_time = int(time.time())
+    # The element at index i is the number of seconds until the user can request
+    # if there is an i+1 limit on the number of songs that can be played in
+    # 'blocks_seconds' seconds
+    times_until_ok = []
+    # If the limit is i songs, then we're looking for the smallest number of
+    # seconds such that we've only made i-1 requests within the last
+    # 'block_seconds' seconds.
+    # If the user is not currently request-blocked, then 0 is in the list.
+    for req_limit in range(1, daily_request_limit + 1):
+        if len(request_times) < req_limit:
+            times_until_ok.append(0)
+            continue
+        # Time at which one can request
+        ok_time = request_times[-req_limit] + block_seconds
+        time_until_ok = max(ok_time - current_time, 0)
+        times_until_ok.append(time_until_ok)
+
+    # Special case for when a user has used up all requests for the day
+    if len(request_times) == daily_request_limit:
+        # Check if all are within the same day
+        daily_waiting_time = 24 * 3600 - (current_time - request_times[0])
+        if daily_waiting_time > 0:
+            print 'Used up %d requests in one day!' % daily_request_limit
+            time_str = str(datetime.timedelta(seconds=daily_waiting_time))
+            print 'Waiting time:', time_str
+            return
+            
+        
+    # Print the limits
+    print 'Request limit | Waiting time'
+    print '--------------|-------------'
+    for req_limit in range(1, daily_request_limit + 1):
+        waiting_time = times_until_ok[req_limit - 1]
+        time_str = str(datetime.timedelta(seconds=waiting_time))
+        print ('%' + str(len('Request limit')) + 'd') % req_limit,
+        print '|',
+        print time_str
+        # No use printing extra lines
+        if waiting_time == 0:
+            break

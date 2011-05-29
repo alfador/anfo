@@ -28,8 +28,11 @@ help_str = \
 'shuffle: Shuffles the queried songs randomly.\n\n' +\
 'update (id): Updates the information for the song with the given id\n\n' +\
 'delete (id): Deletes the song with the given id from the database.\n\n' +\
-'info (id): Shows all information for the song with the given id.\n\n'
-
+'info (id): Shows all information for the song with the given id.\n\n' +\
+'req: Puts the current time into a list of request times.\n\n' +\
+'req_times: Display waiting times for various numbers of request limits.\n\n' +\
+'req: Puts the current time into a list of request times.\n\n' +\
+'req_times: Display waiting times for various numbers of request limits.\n\n'
 
 
 def pageviewer(songs, db):
@@ -125,6 +128,12 @@ def pageviewer(songs, db):
             elif command.startswith('info'):
                 show_page = False
                 commands.info(command[4:], db)
+            elif command == 'req':
+                show_page = False
+                commands.request()
+            elif command == 'req_times':
+                show_page = False
+                commands.print_request_time_info()
             elif command == '':
                 # Do nothing, which lets the user easily view the page again
                 continue

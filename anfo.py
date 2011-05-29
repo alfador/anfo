@@ -32,7 +32,9 @@ help_str = \
 'complete details on how to query.\n\n' +\
 'update (id): Updates the information for the song with the given id\n\n' +\
 'delete (id): Deletes the song with the given id from the database.\n\n'  +\
-'info (id): Shows all information for the song with the given id.\n\n'
+'info (id): Shows all information for the song with the given id.\n\n'  +\
+'req: Puts the current time into a list of request times.\n\n' +\
+'req_times: Display waiting times for various numbers of request limits.\n\n'
 
 
 # UI loop
@@ -70,6 +72,10 @@ if __name__ == '__main__':
                 commands.remake_all(db)
             elif command == 'update_favorites':
                 commands.update_favorites(db)
+            elif command == 'req':
+                commands.request()
+            elif command == 'req_times':
+                commands.print_request_time_info()
             else:
                 print 'Invalid command.'
         # All errors are recoverable

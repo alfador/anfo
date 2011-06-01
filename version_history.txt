@@ -24,3 +24,9 @@ v1.3 - 'anfo.py' is the new main.
        been deleted from anfo.
      - Added 'info' command
      - Did a major refactoring of the code.
+
+v1.4 - Added update_favorites command, which scrapes the website for your
+       favorites.  That said, favorites are now implemented.
+     - 'fav' and 'nofav' can now be used in queries.
+     - Added ability to mark request times with 'req', and view times until
+       requests may be possible with 'req_times'.

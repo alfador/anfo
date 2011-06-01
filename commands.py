@@ -75,7 +75,10 @@ def print_song_info(song):
     print 'Your rating: %d' % song.user_rating
     print 'Genres: %s' % (', '.join(song.genres))
     print 'Tags: %s' % (', '.join(song.tags))
-    # TODO: print 'User favorite: %s' % song.user_favorite
+    if song.user_favorite:
+        print 'This is one of your favorite songs.'
+    else:
+        print 'This is not one of your favorite songs.'
 
 
 def queue(db):

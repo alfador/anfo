@@ -29,6 +29,15 @@ def first_true_index(alist, pred):
             return i
     return None
 
+def debug_print(str):
+    '''
+    Prints the input string if debug is True..
+    Arguments:
+        str - String to print if debug is true.
+    '''
+    if debug:
+        print str
+
 
 def response_to_html(response):
     '''
@@ -181,6 +190,9 @@ def parse_playlist_page(html):
     # pairs).  With the first element of each pair we can get the artist and
     # song name.  The second pair gives us everything else
     for i in range(0, len(chunks), 2):
+        # Unlike individual song info pages, it's hard to parse these entries
+        # because there are no labels - you just have to rely on everything
+        # being in the right location.
         # Get the artist and song title from the first chunk
         chunk1 = chunks[i]
         [artist, title] = re.findall('>.*?<', chunk1)
@@ -191,7 +203,10 @@ def parse_playlist_page(html):
         if artist == '':
             continue
 
+        debug_print('Artist: %s' % artist)
+
         title = title[4:-1] # Get rid of '> - ' and '<'
+        debug_print('Title: %s' % title)
         # Get everything else from the second chunk
         # Still need id, album, year, genres, rating, total rates,
         # duration (in seconds), tags, user rating, and user favorite
@@ -201,8 +216,11 @@ def parse_playlist_page(html):
         cutoff_index = chunk2.index(cutoff_str)
         chunk2 = chunk2[cutoff_index + len(cutoff_str):]
         album = chunk2.split('<')[0]
+        debug_print('Album: %s' % album)
         # Duration
-        cutoff_str = '<br/>'
+        cutoff_str = '<br/>' # Cut this off twice
+        cutoff_index = chunk2.index(cutoff_str)
+        chunk2 = chunk2[cutoff_index + len(cutoff_str):]
         cutoff_index = chunk2.index(cutoff_str)
         chunk2 = chunk2[cutoff_index + len(cutoff_str):]
         colon_index = chunk2.index(':')
@@ -210,6 +228,7 @@ def parse_playlist_page(html):
         duration_str = duration_str.strip()
         [minutes, seconds] = duration_str.split(':')
         duration = 60 * int(minutes) + int(seconds)
+        debug_print('Duration: %s' % duration)
         # User Rating
         cutoff_str = 'My rating: '
         cutoff_index = chunk2.index(cutoff_str)
@@ -217,6 +236,7 @@ def parse_playlist_page(html):
         user_rating = chunk2[:2].strip()
         # Store rating of - as 0
         user_rating = 0 if user_rating == '-' else int(user_rating)
+        debug_print('User rating: %s' % user_rating)
         # Rating
         cutoff_str = 'Song rating: '
         cutoff_index = chunk2.index(cutoff_str)
@@ -226,6 +246,7 @@ def parse_playlist_page(html):
             space_index = chunk2.index(' ')
             rating = chunk2[0:space_index]
             rating = float(rating)
+        debug_print('Rating: %s' % rating)
         # Total rates
         cutoff_str = '('
         cutoff_index = chunk2.index(cutoff_str)
@@ -233,6 +254,7 @@ def parse_playlist_page(html):
         space_index = chunk2.index(' ')
         total_rates_str = chunk2[0:space_index]
         total_rates = 0 if total_rates_str == '' else int(total_rates_str)
+        debug_print('Total rates: %s' % total_rates)
         # Genres
         # Store as a list of strings
         cutoff_str = 'Genre(s): '
@@ -241,6 +263,7 @@ def parse_playlist_page(html):
         end_index = chunk2.index('<br/>')
         genres = chunk2[:end_index] # Comma-delimited
         genres = genres.split(',')
+        debug_print('Genres: %s' % genres)
         # Tags
         # Store as a list of strings
         cutoff_str = 'Tag(s):'
@@ -253,13 +276,17 @@ def parse_playlist_page(html):
         for match in matches:
             if match != '><':
                 match = match[1:-1]
-                tags.append(match)
+                match = match.strip()
+                if match != '' and match != ',':
+                    tags.append(match)
+        debug_print('Tags: %s' % tags)
         # Id
         cutoff_str = 'songinfo.php?id='
         cutoff_index = chunk2.index(cutoff_str)
         chunk2 = chunk2[cutoff_index + len(cutoff_str):]
         id_str = chunk2[:chunk2.index('"')]
         id = int(id_str)
+        debug_print('Id: %s' % id)
         ### TODO: Get the user_favorite and year
         user_favorite = False
         year = 0
@@ -267,19 +294,12 @@ def parse_playlist_page(html):
         # Debug code
         # TODO: Just use the debugger
         if debug:
-            print 'Id: ', id
-            print 'Artist: ', artist
-            print 'Title: ', title
-            print 'Album: ', album
             print 'Year: ', year
-            print 'Genres: ', genres
-            print 'Rating: ', rating
-            print 'Total rates: ', total_rates
-            print 'Duration: ', duration
-            print 'Tags: ', tags
-            print 'User rating: ', user_rating
             print 'User favorite: ', user_favorite
-            raw_input() # Pause until user presses enter
+            # Pause until user presses enter, just so that the info can be seen
+            # easily
+            raw_input()
+            
         
         # Put in the song
         # Convert genres and tags into list of strings

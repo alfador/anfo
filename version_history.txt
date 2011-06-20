@@ -30,3 +30,5 @@ v1.4 - Added update_favorites command, which scrapes the website for your
      - 'fav' and 'nofav' can now be used in queries.
      - Added ability to mark request times with 'req', and view times until
        requests may be possible with 'req_times'.
+
+v1.4.1 - Fixed for the website update.

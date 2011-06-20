@@ -13,6 +13,22 @@ import urllib2
 
 debug = False
 
+# Helper function
+def first_true_index(alist, pred):
+    '''
+    Returns the index of the first element to satisfy the given predicate
+    function.  If no element in the list satisfies the given predicate, None is
+    returned.
+    Arguments:
+        alist - List of elements to be searched.
+        pred - Predicate function, taking in a value from the list and returning
+               a boolean.
+    '''
+    for i, e in enumerate(alist):
+        if pred(e):
+            return i
+    return None
+
 
 def response_to_html(response):
     '''
@@ -44,51 +60,52 @@ def parse_song_page(html):
     Parses the html of a song page and returns a SongInfo object.
     Doesn't grab the user rating.
     '''
-    # Amount extra to add to index, in case some extra elements are present
-    extra = 0
     # TODO: This is a horrible way to do it that'll break easily.
     page = html.split('<td class=')
     # Adding in some asserts for sanity checks
     # id
-    assert(page[5 + extra].startswith('"row1">Song ID'))
-    id = int(page[6 + extra].split('>')[1].split('<')[0])
+    id_index = first_true_index(page, lambda x: 'Song ID</td>' in x)
+    id = int(page[id_index + 1].split('>')[1].split('<')[0])
     # Artist
-    artist = page[11 + extra].split('</a>')[0].split('">')[-1]
+    artist_index = first_true_index(page, lambda x: 'Artist</td>' in x)
+    artist = page[artist_index + 1].split('</a>')[0].split('">')[-1]
     # Title
-    assert(page[12 + extra].startswith('"row2">Title'))
-    title = page[13 + extra].split('>')[1].split('<')[0]        
+    title_index = first_true_index(page, lambda x: 'Title</td>' in x)
+    title = page[title_index + 1].split('>')[1].split('<')[0]        
     # Album
-    album = page[15 + extra].split('</a>')[0].split('">')[-1]
-    # Some pages have a homepage element (like douga) after the album
-    if 'Homepage' in page[16 + extra]:
-        extra += 2
+    album_index = first_true_index(page, lambda x: 'Album</td>' in x)
+    album = page[album_index + 1].split('</a>')[0].split('">')[-1]
     # Year
-    year_str = page[17 + extra].split('>')[1].split('<')[0]
+    year_index = first_true_index(page, lambda x: 'Year</td>' in x)
+    year_str = page[year_index + 1].split('>')[1].split('<')[0]
     # Sometimes the year isn't given, so just make it 0
     year = 0 if year_str == '' else int(year_str)
     # Genre
-    genre_str = page[19 + extra].split('>')[1].split('<')[0]
+    genre_index = first_true_index(page, lambda x: 'Genre(s)</td>' in x)
+    genre_str = page[genre_index + 1].split('>')[1].split('<')[0]
     genre_str = genre_str.strip()
     # Convert from comma-delimited to list of strings, as required by SongInfo
     # constructor.
     genres = genre_str.split(',')
     # Rating
-    rating_str = page[21 + extra].split('>')[1].split('<')[0]
-    rating_str = rating_str.split('/')[0]
-    rating = 0 if rating_str == '-' else float(rating_str)
+    rating_index = first_true_index(page, lambda x: 'Rating</td>' in x)
+    rating_str = page[rating_index + 1].split('>')[1].split('<')[0]
+    rating = rating_str.split('/')[0]
+    rating = 0 if rating == '-' else float(rating)
     # Total rates
-    rating_str = page[21 + extra].split('>')[1].split('<')[0]
     rating_str = rating_str.split('(')[1]
     rating_str = rating_str.split(' ')[0]
     total_rates = 0 if rating_str == '' else int(rating_str)
     # TODO: Requested info
     # Duration, in seconds
-    duration_str = page[29 + extra].split('>')[1].split('<')[0]
+    duration_index = first_true_index(page, lambda x: 'Duration</td>' in x)
+    duration_str = page[duration_index + 1].split('>')[1].split('<')[0]
     [min, sec] = duration_str.split(':')
     duration = 60 * int(min) + int(sec)
     # TODO: Fav block
     # Tags
-    tag_str = page[35 + extra]
+    tag_index = first_true_index(page, lambda x: 'Tags:</td>' in x)
+    tag_str = page[tag_index + 1]
     tag_begin_str = '<span'
     tag_end_str = '</td>'
     tag_str = tag_str[tag_str.index(tag_begin_str):

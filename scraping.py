@@ -158,8 +158,9 @@ def scrape_all():
     # Parse all of the pages
     songs = []
     for page_num in range(1, num_pages + 1):
-        print 'Parsing page %d of %d' % (page_num, num_pages)
+        print 'Fetching page %d of %d' % (page_num, num_pages)
         response = opener.open('https://www.animenfo.com/radio/playlist.php?ajax=true&page='+str(page_num))
+        print 'Parsing page...'
         html = response_to_html(response)
         page_songs = parse_playlist_page(html)
         songs.extend(page_songs)

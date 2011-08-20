@@ -94,6 +94,19 @@ def queue(db):
         print e
 
 
+def queue_songs(db):
+    '''
+    Returns the songs in the queue.
+    Arguments:
+        db - Database object
+    '''
+    try:
+        return db.queue_songs()
+    except urllib2.URLError, e:
+        print 'Failed to connect to site.'
+        print e
+
+
 def print_queue_results(songs):
     '''
     Prints the songs in the queue in a nice format.

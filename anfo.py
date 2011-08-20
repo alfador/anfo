@@ -19,22 +19,24 @@ except ImportError, e:
 db = database.Database()
 
 # Help string
-help_str = \
-'Commands: \n' +\
-'queue: Display the current queue\n\n' +\
-'(exit|quit|q): quit\n\n' +\
-'rate (id) (rating): sets the user rating for a song\n\n' +\
-'remake_all: Build entire database.  Run this once when you ' +\
-'use the program for the first time.\n\n' +\
-'update_favorites: Scrape your favorite list.  Only run this once the ' +\
-'database has already been made\n\n' +\
-'query (query_string): Make a query.  See README.txt for ' +\
-'complete details on how to query.\n\n' +\
-'update (id): Updates the information for the song with the given id\n\n' +\
-'delete (id): Deletes the song with the given id from the database.\n\n'  +\
-'info (id): Shows all information for the song with the given id.\n\n'  +\
-'req: Puts the current time into a list of request times.\n\n' +\
+help_str = (
+'Commands: \n' +
+'queue: Display the current queue\n\n' +
+'queue_songs: Display the current queue in pageviewer\n\n' +
+'(exit|quit|q): quit\n\n' +
+'rate (id) (rating): sets the user rating for a song\n\n' +
+'remake_all: Build entire database.  Run this once when you ' +
+'use the program for the first time.\n\n' +
+'update_favorites: Scrape your favorite list.  Only run this once the ' +
+'database has already been made\n\n' +
+'query (query_string): Make a query.  See README.txt for ' +
+'complete details on how to query.\n\n' +
+'update (id): Updates the information for the song with the given id\n\n' +
+'delete (id): Deletes the song with the given id from the database.\n\n'  +
+'info (id): Shows all information for the song with the given id.\n\n'  +
+'req: Puts the current time into a list of request times.\n\n' +
 'req_times: Display waiting times for various numbers of request limits.\n\n'
+)
 
 
 # UI loop
@@ -57,6 +59,13 @@ if __name__ == '__main__':
                 commands.info(command[4:], db)
             elif command == 'queue':
                 commands.queue(db)
+            elif command == 'queue_songs':
+                # sqlite3 might give an error on a bad query
+                try:
+                    songs = commands.queue_songs(db)
+                    pageviewer.pageviewer(songs, db)
+                except sqlite3.Error, e:
+                    print e
             elif command.startswith('query'):
                 # sqlite3 might give an error on a bad query
                 try:

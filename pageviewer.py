@@ -11,7 +11,7 @@ import sqlite3
 songs_per_page = 20
 
 # Help statement to print out when queried for help
-help_str = \
+help_str = (
 'Page viewer:\n' +\
 'Commands:\n' +\
 'help: Access this help message\n\n' +\
@@ -21,6 +21,7 @@ help_str = \
 'stats: get stats about the queried songs\n\n' +\
 'global_stats: get stats on queried songs based on global information\n\n' +\
 'queue: view the queue\n\n' +\
+'queue_songs: Display the current queue in pageviewer\n\n' +
 'query (query_string): Make a query.  See README.txt for complete details ' +\
 'on how to query.  Does not update the songs currently being viewed until a ' +\
 'new query is done.\n\n' +\
@@ -33,6 +34,7 @@ help_str = \
 'req_times: Display waiting times for various numbers of request limits.\n\n' +\
 'req: Puts the current time into a list of request times.\n\n' +\
 'req_times: Display waiting times for various numbers of request limits.\n\n'
+)
 
 
 def pageviewer(songs, db):
@@ -107,6 +109,16 @@ def pageviewer(songs, db):
             elif command == 'queue':
                 show_page = False
                 commands.queue(db)
+            elif command == 'queue_songs':
+                # Might get an error, and also need to update certain variables
+                try:
+                    songs = commands.queue_songs(db)
+                    num_songs = len(songs)
+                    num_pages = max(num_songs - 1, 0) / songs_per_page + 1
+                    page = 1
+                except sqlite3.Error, e:
+                    show_page = False
+                    print e
             elif command.startswith('query'):
                 # Might get an error, and also need to update certain variables
                 try:

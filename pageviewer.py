@@ -21,7 +21,7 @@ help_str = (
 '(q|quit|exit): go back to main prompt\n\n' +\
 'stats: get stats about the queried songs\n\n' +\
 'global_stats: get stats on queried songs based on global information\n\n' +\
-'all_the_stats: display all the stats!\n\n' +\
+'all_the_stats [min_songs=10], [num_print=5]: display all the stats!\n\n' +\
 'queue: view the queue\n\n' +\
 'queue_songs: Display the current queue in pageviewer\n\n' +
 'query (query_string): Make a query.  See README.txt for complete details ' +\
@@ -108,9 +108,9 @@ def pageviewer(songs, db):
             elif command == 'global_stats':
                 show_page = False
                 commands.print_global_stats(songs)
-            elif command == 'all_the_stats':
+            elif command.startswith('all_the_stats'):
                 show_page = False
-                stats.print_all_the_stats(songs)
+                commands.print_all_the_stats(command, songs)
             elif command == 'queue':
                 show_page = False
                 commands.queue(db)

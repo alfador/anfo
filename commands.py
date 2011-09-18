@@ -6,6 +6,7 @@ places.
 import database
 import datetime
 import math
+import stats
 import time
 import urllib2
 
@@ -282,6 +283,24 @@ def print_global_stats(songs):
     print 'Genres:'
     for genre, count in genres:
         print '%s: %d' % (genre, count)
+
+def print_all_the_stats(command, songs):
+    '''Prints all the stats.
+
+    Args:
+        command: Command, beginning with 'all_the_stats'
+        songs: List of songs to perform the analysis on.
+    '''
+    command = command.split()
+    if len(command) == 1:
+        stats.print_all_the_stats(songs)
+        return
+    min_songs = int(command[1])
+    if len(command) == 2:
+        stats.print_all_the_stats(songs, min_songs=min_songs)
+        return
+    num_print = int(command[2])
+    stats.print_all_the_stats(songs, min_songs=min_songs, num_print=num_print)
 
 
 def ALFADOR():

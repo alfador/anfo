@@ -105,15 +105,21 @@ def print_best_and_worst_n(sorted_groups, n=5, header_name='', value_name=''):
         print '%s, %g' % sorted_groups[i]
     
 
-def print_all_the_stats(songs):
+def print_all_the_stats(songs, min_songs=10, num_print=5):
     '''
     Prints all the stats!
+
+    Args:
+        min_songs: Minimum number of songs each entity should have to qualify
+            being in the ordering.
+        num_print: Number of entities to print in each category.
     '''
-    key_fields = ['artist', 'album', 'rating', 'duration']
+    # TODO: Do some sort of regression on rating and duration
+    key_fields = ['artist', 'album']
     sorting_fields = ['user_rating'] * len(key_fields)
     for i, e in enumerate(key_fields):
         sorted_groups = group_and_order_by_fields(
-            songs, key_fields[i], sorting_fields[i], 10)
-        print_best_and_worst_n(sorted_groups, 5, key_fields[i],
+            songs, key_fields[i], sorting_fields[i], min_songs)
+        print_best_and_worst_n(sorted_groups, num_print, key_fields[i],
                                sorting_fields[i])
     

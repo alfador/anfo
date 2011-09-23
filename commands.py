@@ -1,6 +1,7 @@
 '''
 This module is used to provide UI commands that can be called from arbitrary
 places.
+This module is meant to be purely functional.
 '''
 
 import database
@@ -369,8 +370,7 @@ def remake_all(db):
         except urllib2.URLError, e:
             print 'Failed to connect to site.'
             print e
-        # TODO
-        # Bad style to catch any exception
+        # TODO: Bad style to catch any exception
         except Exception, e:
             print e
             print 'Error in scraping.  Do you have an internet ' +\

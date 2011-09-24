@@ -135,7 +135,12 @@ def pageviewer(songs, db):
                     show_page = False
                     print e
             elif command.startswith('rate'):
-                commands.rate_song(command[4:], db)
+                (id, rating) = commands.rate_song(command[4:], db)
+                # Also apply the rating to the current songs
+                for song in songs:
+                    if song.id == id:
+                        song.user_rating = rating 
+                        break
             elif command == 'shuffle':
                 random.shuffle(songs)
             elif command.startswith('update'):

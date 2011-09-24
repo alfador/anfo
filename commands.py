@@ -318,10 +318,13 @@ def rate_song(command, db):
     Arguments:
         command - String of the form (id) (rating)
         db - Database object.
+
+    Returns:
+        The (id, rating) applied if successful, None otherwise.
     '''
-    error_msg = 'Invalid rating syntax.  Correct syntax is ' +\
-    '\'(id) (rating)\', where both ' +\
-    '\'id\' and \'rating\' are integers.'
+    error_msg = ('Invalid rating syntax.  Correct syntax is '
+      '\'(id) (rating)\', where both '
+      '\'id\' and \'rating\' are integers.')
     command = command.split()
     if len(command) != 2:
         raise InvalidArgumentError(error_msg)
@@ -337,6 +340,7 @@ def rate_song(command, db):
         raise SongNotFoundError('No song with id %d exists in the database.'
             % id)
     db.rate_song(id, int(rating))
+    return (id, rating)
 
 
 def delete_song(command, db):

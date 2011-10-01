@@ -5,13 +5,17 @@ If something breaks when the site changes, it'll probably be in here.
 '''
 import cookielib
 import getpass
+import Queue
 import re
 import songinfo
+import threading
 import urllib
 import urllib2
 
-
 debug = False
+
+# Number of threads to use when performing a fresh scrape of everything.
+num_threads = 3
 
 # Helper function
 def first_true_index(alist, pred):
@@ -134,6 +138,48 @@ def parse_song_page(html):
     return song
 
 
+class ScrapingThread(threading.Thread):
+    '''
+    Scrapes a page of the songlist.
+    '''
+    def __init__(self, queue, opener, song_list, song_list_lock, total_pages):
+        '''
+        Stores all of the given parameters for future use.
+        Args:
+            queue: Queue containing songlist page numbers to fetch.
+            opener: OpenDirector containing the cookie.
+            song_list: List of songs to append the parsed songs to.
+            song_list_lock: Lock on the list of songs, to prevent multiple
+                ScraperThreads from trampling on each other.
+            total_pages: Total number of pages being scraped.  Useful only for
+                printing status information.
+        '''
+        threading.Thread.__init__(self)
+        self.queue = queue
+        self.opener = opener
+        self.song_list = song_list
+        self.song_list_lock = song_list_lock
+        self.total_pages = total_pages
+
+    def run(self):
+        '''
+        Scrapes the page, adding the parsed songs to the song list.
+        '''
+        while True:
+            # Get the page number from the queue, scrape the relevent page, then
+            # tell the queue that we're done and ready for more.
+            page_num = self.queue.get()
+            print 'Fetching page %d of %d' % (page_num, self.total_pages)
+            response = self.opener.open(
+                'https://www.animenfo.com/radio/playlist.php?ajax=true&page='+str(page_num))
+            html = response_to_html(response)
+            page_songs = parse_playlist_page(html)
+            self.song_list_lock.acquire()
+            self.song_list.extend(page_songs)
+            self.song_list_lock.release()
+            self.queue.task_done()
+        
+
 def scrape_all():
     '''
     Scrapes the website and returns a list of SongInfo, giving all songs on the
@@ -142,13 +188,14 @@ def scrape_all():
     cjar = cookielib.CookieJar()
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cjar))
 
-    print "About to scrape all songs."
+    print 'About to scrape all songs.'
 
     # Query user for username and password
-    username = raw_input("Username: ")
-    password = getpass.getpass("Password: ")
+    username = raw_input('Username: ')
+    password = getpass.getpass('Password: ')
 
     # Save the login cookie
+    print 'Logging in...'
     cjar = cookielib.CookieJar()
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cjar))
     login_data = urllib.urlencode({'username' : username, 'password' : password})
@@ -161,18 +208,22 @@ def scrape_all():
     # Number we want is max of these numbers
     matches = re.findall('goToPage\(\d+\)', html)
     num_pages = 0
+    print 'Getting number of pages...'
     for match in matches:
         num_pages = max(num_pages, int(match.split('(')[1][:-1]))
 
     # Parse all of the pages
     songs = []
-    for page_num in range(1, num_pages + 1):
-        print 'Fetching page %d of %d' % (page_num, num_pages)
-        response = opener.open('https://www.animenfo.com/radio/playlist.php?ajax=true&page='+str(page_num))
-        print 'Parsing page...'
-        html = response_to_html(response)
-        page_songs = parse_playlist_page(html)
-        songs.extend(page_songs)
+    songs_lock = threading.Lock()
+    queue = Queue.Queue()
+    for page_num in xrange(1, num_pages + 1):
+        queue.put(page_num)
+    for _ in range(num_threads):
+        scraper_thread = ScrapingThread(queue, opener, songs, songs_lock,
+                                        num_pages)
+        scraper_thread.setDaemon(True)
+        scraper_thread.start()
+    queue.join()
 
     return songs
 

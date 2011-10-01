@@ -370,7 +370,10 @@ def remake_all(db):
     proceed = raw_input()
     if proceed == 'Y':
         try:
+            start_time = time.time()
             db.remake_all()
+            end_time = time.time()
+            print 'Time taken: %g seconds' % (end_time - start_time)
         except urllib2.URLError, e:
             print 'Failed to connect to site.'
             print e

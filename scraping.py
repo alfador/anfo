@@ -150,7 +150,7 @@ class ScrapingThread(threading.Thread):
             opener: OpenDirector containing the cookie.
             song_list: List of songs to append the parsed songs to.
             song_list_lock: Lock on the list of songs, to prevent multiple
-                ScraperThreads from trampling on each other.
+                ScrapingThreads from trampling on each other.
             total_pages: Total number of pages being scraped.  Useful only for
                 printing status information.
         '''

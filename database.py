@@ -50,6 +50,10 @@ class Database:
         self.create_database()
         self.conn.commit() # Should commit after everything a user can call
 
+        self.conn.create_function('reverse', 1, lambda s: str(s)[::-1])
+
+
+
     def create_database(self):
         '''
         Creates the database.

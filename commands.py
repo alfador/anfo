@@ -408,6 +408,7 @@ def update_song(command, db):
     Updates the stored information for a song, querying the website.
     Arguments
         command - String of the form (id), where id is an integer.
+        db - The database.
     '''
     # Parse command, printing out an error message if the given command is
     # formatted incorrectly
@@ -509,3 +510,27 @@ def print_request_time_info():
         # No use printing extra lines
         if waiting_time == 0:
             break
+
+
+def find_duplicates(db):
+    '''
+    Finds duplicates in the database.
+    Args:
+        db - The database
+    '''
+    command = 'select * from ' + database.table_name
+    songs =  db.make_query(command)
+    dupes = stats.duplicates(songs)
+    print 'Found %d pairs with the same title and artist' % len(dupes)
+    # Write things out to file
+    dupe_filename = 'duplicates.txt'
+    dupe_file = open(dupe_filename, 'w')
+    for (song1, song2) in dupes:
+        # Print the ids, durations, artists, and titles to file
+        dupe_file.write('%d, %d, %s, %s\n' % 
+            (song1.id, song1.duration, song1.title, song1.artist))
+        dupe_file.write('%d, %d, %s, %s\n' % 
+            (song2.id, song2.duration, song2.title, song2.artist))
+        dupe_file.write('\n')
+    dupe_file.close()
+    print 'Made list of possible duplicates at %s' % dupe_filename

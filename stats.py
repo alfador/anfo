@@ -110,6 +110,7 @@ def print_all_the_stats(songs, min_songs=10, num_print=5):
     Prints all the stats!
 
     Args:
+        songs: List of SongInfo
         min_songs: Minimum number of songs each entity should have to qualify
             being in the ordering.
         num_print: Number of entities to print in each category.
@@ -123,3 +124,40 @@ def print_all_the_stats(songs, min_songs=10, num_print=5):
         print_best_and_worst_n(sorted_groups, num_print, key_fields[i],
                                sorting_fields[i])
     
+
+def duplicates(songs):
+    '''
+    Finds possible duplicates within the given songs, based on title,
+    duration, and artist.
+    Args:
+        songs - A list of SongInfo to find duplicates within.
+        num_matches_returned - The number of songs to return.
+    Returns:
+        A list of 2-tuples of SongInfo giving the songs with the same title (up
+        to case) ordered by difference in duration.
+    '''
+    # Sort by title to make things faster
+    songs_sorted = sorted(songs, key=lambda x:x.title.lower())
+
+    # Consists of pairs of SongInfo with the same title.
+    title_pairs = []
+    for i in xrange(len(songs_sorted)):
+        song1 = songs_sorted[i]
+        title1 = song1.title.lower()
+        artist1 = song1.artist.lower()
+        album1 = song1.album.lower()
+        # Find the songs that match this song's title.
+        for j in xrange(i+1, len(songs_sorted)):
+            song2 = songs_sorted[j]
+            if song2.title.lower() != title1 or \
+              song2.artist.lower() != artist1 or \
+              song2.album.lower() != album1:
+                break
+            # Add the tuplet (duration_diff, song1, song2) to the list
+            duration_diff = abs(song1.duration - song2.duration)
+            title_pairs.append((duration_diff, song1, song2))
+
+    # Sort by difference in duration and get rid of the duration difference
+    title_pairs.sort()
+    title_pairs = [x[1:] for x in title_pairs]
+    return title_pairs

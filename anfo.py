@@ -36,6 +36,8 @@ help_str = (
 'info (id): Shows all information for the song with the given id.\n\n'  +
 'req: Puts the current time into a list of request times.\n\n' +
 'req_times: Display waiting times for various numbers of request limits.\n\n'
+'extract_duplicates: Find duplicate songs according to some criterion and ' +
+'export the list of duplicates to a text file.\n\n'
 )
 
 
@@ -85,6 +87,8 @@ if __name__ == '__main__':
                 commands.request()
             elif command == 'req_times':
                 commands.print_request_time_info()
+            elif command == 'export_duplicates':
+                commands.find_duplicates(db)
             else:
                 print 'Invalid command.'
         # All errors are recoverable

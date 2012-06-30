@@ -1,0 +1,9 @@
+*.zip
+*.pyc
+
+todo.txt
+duplicates.txt
+duplicates_full.txt
+test.py
+data
+tests_to_run.txt
